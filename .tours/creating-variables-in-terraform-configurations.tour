@@ -1,0 +1,108 @@
+{
+  "$schema": "https://aka.ms/codetour-schema",
+  "title": "Creating Variables in Terraform Configurations",
+  "steps": [
+    {
+      "file": "ec2/main.tf",
+      "description": "The AWS resources deployed in this lab will be configured in this file.\n\nAn Amazon Virtual Private Cloud (VPC) resource has already been defined. You will be configuring the AWS Subnet and AWS EC2 Instance resources in this lab.",
+      "line": 16,
+      "title": "VPC"
+    },
+    {
+      "file": "ec2/variables.tf",
+      "description": "Click **Insert Code** below the code snippet to define the following variables:\n\n```js\nvariable \"server_name\"{\n    description = \"Name of the server\"\n    type = string\n}\nvariable \"subnet_cidr\"{\n    description = \"Subnet CIDR Block\"\n    type = string\n}\nvariable \"az\"{\n    description = \"Availability zone\"\n    type = string\n}\n\n```",
+      "line": 59,
+      "title": "Variables"
+    },
+    {
+      "file": "ec2/variables.tf",
+      "description": "These variables will be referenced in the `main.tf` file in order to configure an AWS Subnet.\n\nThe variables defined in this file do not have a `default` value defined. Without a default value, you will need to define the values of each variable within the `terraform apply` CLI command, or in a separate `terraform.tfvars` file. \n\nYou will define your variables using both options in this lab.",
+      "line": 13,
+      "title": "Description"
+    },
+    {
+      "file": "ec2/main.tf",
+      "description": "Click **Insert Code** to define the `aws_subnet` resource. \n\n```js\nresource \"aws_subnet\" \"example\" {\n  vpc_id            = aws_vpc.example.id\n  cidr_block        = var.subnet_cidr\n  availability_zone = var.az\n  tags = {\n    Name = \"${var.server_name}-subnet\"\n  }\n}\n\n\n```",
+      "line": 45,
+      "title": "Subnet"
+    },
+    {
+      "file": "ec2/main.tf",
+      "description": "The `aws_subnet` resource definition references each variable defined in the `variables.tf` file.\n\n`${var.server_name}` is an example of using Terraform string interpolation to create a new name tag value. In this example, if the `server_name` variable is `development`, the resolved value will read `development-subnet`. The value will be resolved during the Terraform `apply` process.",
+      "line": 26,
+      "selection": {
+        "start": {
+          "line": 3,
+          "character": 273
+        },
+        "end": {
+          "line": 3,
+          "character": 278
+        }
+      },
+      "title": "Description"
+    },
+    {
+      "directory": "ec2",
+      "description": "Click the following command to change directories and run the `init` command:\n\n>> cd ec2 && terraform init",
+      "title": "Init"
+    },
+    {
+      "directory": "ec2",
+      "description": "Click the following command to apply your changes and deploy your AWS Subnet resource:\n\n>> terraform apply -var=\"server_name=calabvm\" -var=\"subnet_cidr=10.0.1.0/24\" -var=\"az=us-west-2a\" --auto-approve\n\nNotice the `-var=` flag being passed in three times to the `apply` command. Each instance is a variable being passed in via the command line. The `--auto-approve` flag instructs Terraform to deploy changes automatically instead of waiting for user approval.",
+      "title": "Apply #1"
+    },
+    {
+      "file": "ec2/variables.tf",
+      "description": "Insert the following variables into the `variables.tf` file:\n\n```js\nvariable \"ami_ids\" { \n    type = map\n    description = \"AMI ID's to deploy\"\n    default = {\n        linux = \"ami-0d398eb3480cb04e7\"\n        windows = \"ami-0afb7a78e89642197\"\n    }\n}\nvariable \"disk\" {\n    description = \"OS image to deploy\"\n    type = object({\n        delete_on_termination = bool\n        encrypted = bool\n        volume_size = string\n        volume_type = string\n  })\n} \nvariable \"os_type\" {\n    description = \"OS to deploy, Linux or Windows\"\n    type = string\n}\nvariable \"instance_size\" {\n    description = \"Size of the EC2 instance\"\n    type = string\n    default = \"t2.micro\"\n}\nvariable \"ec2_monitoring\" {\n    description = \"Configure monitoring on the EC2 instance\"\n    type = bool\n}\n\n\n```",
+      "line": 132,
+      "title": "Variables"
+    },
+    {
+      "file": "ec2/variables.tf",
+      "description": "The following variables will be referenced in the `main.tf` file to configure an AWS EC2 Instance:\n\n- `ami_ids`: A **map** type variable that will store two types of Amazon Machine Image IDs. One for `linux` EC2 instances, another for `windows` instances.\n- `disk`: An **object** type variable that stores key-value pairs related to the EC2 instance's `disk` configuration. Each key within the `disk` variable can be accessed using dot notation. For example `var.disk.encrypted`.\n- `os_type`: A string variable that will determine which `ami_id` will be used for the EC2 instance. You will see how the `os_type` and `ami_ids` variables are used together in the next step.\n- `instance_size`: A string variable with a default value of `t2.micro` for the size of the EC2 instance.\n- `ec2_monitoring`: A boolean variable to define whether monitoring is configured on the EC2 instance.",
+      "line": 43,
+      "title": "Description"
+    },
+    {
+      "file": "ec2/main.tf",
+      "description": "```js\nresource \"aws_instance\" \"server\" {\n  ami                    = lookup(var.ami_ids, var.os_type, null)\n  instance_type          = var.instance_size\n  monitoring             = var.ec2_monitoring\n  vpc_security_group_ids = [aws_vpc.example.default_security_group_id]\n  subnet_id              = aws_subnet.example.id               \n  root_block_device {\n      delete_on_termination = var.disk.delete_on_termination\n      encrypted             = var.disk.encrypted\n      volume_size           = var.disk.volume_size\n      volume_type           = var.disk.volume_type\n  }\n  tags = {\n      Name = var.server_name\n  }\n}\n```",
+      "line": 72,
+      "title": "EC2 Instance"
+    },
+    {
+      "file": "ec2/main.tf",
+      "description": "The `aws_instance` resource defined above utilizes template references and variables to configure the EC2 instance. \n\nThe `lookup()` function accepts two arguments. The first argument (`var.ami_ids`) is the map object to search through. The second argument (`var.os_type`) is the key to select. The third argument (`null`) will be applied as a default if no matching key exists within the map object. \n\nIf `linux` is passed in as the `os_type` variable, the Linux AMI ID is used for this EC2 instance.  ",
+      "line": 42,
+      "title": "Description"
+    },
+    {
+      "file": "ec2/terraform.tfvars",
+      "description": "Click **Insert Code** to paste in the following variables and their values:\n\n```js\nserver_name = \"calabvm\"\nsubnet_cidr = \"10.0.1.0/24\"\naz = \"us-west-2a\"\nos_type = \"linux\"\nec2_monitoring = true\ndisk = {\n    delete_on_termination = false\n    encrypted = true\n    volume_size = \"10\"\n    volume_type = \"standard\"\n}\n```",
+      "line": 31,
+      "title": "Terrafrom Variables Config"
+    },
+    {
+      "file": "ec2/terraform.tfvars",
+      "description": "These value types will match the variable types defined in the `variables.tf` file.\n\nThe `ami_ids` and `instance_size` variables are missing from this file. These values have both been defined with default values in the `variables.tf` file and don't require a value stored in this file.\n\nIf you wish to override the default values stored in the `variables.tf` file, you can either pass in the variable value via the command line, or define the variable with a different value in this `terraform.tfvars` file.",
+      "line": 11,
+      "title": "Description"
+    },
+    {
+      "file": "ec2/outputs.tf",
+      "description": "Insert the following output variable into the `outputs.tf` file:\n\n```js\noutput \"private_ip\" {\n    description = \"Private IP Address of EC2\"\n    value = aws_instance.server.private_ip\n}\n```\n\nThe `private_ip` variable will resolve the private IP address of the EC2 instance being deployed.",
+      "line": 7,
+      "title": "Output"
+    },
+    {
+      "directory": "ec2",
+      "description": "Click the following to apply the new changes to the project:\n\n>> terraform apply --auto-approve",
+      "title": "Apply #2"
+    },
+    {
+      "directory": "ec2",
+      "description": "The input and output variables have been applied and resolved during the deployment. \n\nYou've successfully defined Terraform variables and specified their values using the Terraform CLI and the `terraform.tfvars` config file. \n\nReturn to the Cloud Academy Lab browser tab and run the validation check associated with this lab step.",
+      "title": "Complete"
+    }
+  ]
+}
