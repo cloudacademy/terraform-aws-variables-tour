@@ -10,7 +10,7 @@
     },
     {
       "file": "ec2/variables.tf",
-      "description": "Click **Insert Code** below the code snippet to define the following variables:\n\n```js\nvariable \"server_name\"{\n    description = \"Name of the server\"\n    type = string\n}\nvariable \"subnet_cidr\"{\n    description = \"Subnet CIDR Block\"\n    type = string\n}\nvariable \"az\"{\n    description = \"Availability zone\"\n    type = string\n}\n\n```",
+      "description": "Click **Insert Code** below the code snippet to define the following variables, then click **Next**:\n\n```js\nvariable \"server_name\"{\n    description = \"Name of the server\"\n    type = string\n}\nvariable \"subnet_cidr\"{\n    description = \"Subnet CIDR Block\"\n    type = string\n}\nvariable \"az\"{\n    description = \"Availability zone\"\n    type = string\n}\n\n```",
       "line": 59,
       "title": "Variables"
     },
@@ -22,7 +22,7 @@
     },
     {
       "file": "ec2/main.tf",
-      "description": "Click **Insert Code** to define the `aws_subnet` resource. \n\n```js\nresource \"aws_subnet\" \"example\" {\n  vpc_id            = aws_vpc.example.id\n  cidr_block        = var.subnet_cidr\n  availability_zone = var.az\n  tags = {\n    Name = \"${var.server_name}-subnet\"\n  }\n}\n\n\n```",
+      "description": "Click **Insert Code** to define the `aws_subnet` resource, then click **Next**\n\n```js\nresource \"aws_subnet\" \"example\" {\n  vpc_id            = aws_vpc.example.id\n  cidr_block        = var.subnet_cidr\n  availability_zone = var.az\n  tags = {\n    Name = \"${var.server_name}-subnet\"\n  }\n}\n\n\n```",
       "line": 45,
       "title": "Subnet"
     },
@@ -49,7 +49,7 @@
     },
     {
       "directory": "ec2",
-      "description": "Click the following command to apply your changes and deploy your AWS Subnet resource:\n\n>> terraform apply -var=\"server_name=calabvm\" -var=\"subnet_cidr=10.0.1.0/24\" -var=\"az=us-west-2a\" --auto-approve\n\nNotice the `-var=` flag being passed in three times to the `apply` command. Each instance is a variable being passed in via the command line. The `--auto-approve` flag instructs Terraform to deploy changes automatically instead of waiting for user approval.",
+      "description": "Click the following command to apply your changes and deploy your AWS Subnet resource:\n\n>> terraform apply -var=\"server_name=calabvm\" -var=\"subnet_cidr=10.0.1.0/24\" -var=\"az=us-west-2a\" --auto-approve\n\nNotice the `-var=` flag being passed in three times to the `apply` command. Each instance is a variable being passed in via the command line. The `--auto-approve` flag instructs Terraform to deploy changes automatically instead of waiting for user approval.\n\nThe deployment will successfully create the VPC and Subnet resources.",
       "title": "Apply #1"
     },
     {
@@ -66,7 +66,7 @@
     },
     {
       "file": "ec2/main.tf",
-      "description": "```js\nresource \"aws_instance\" \"server\" {\n  ami                    = lookup(var.ami_ids, var.os_type, null)\n  instance_type          = var.instance_size\n  monitoring             = var.ec2_monitoring\n  vpc_security_group_ids = [aws_vpc.example.default_security_group_id]\n  subnet_id              = aws_subnet.example.id               \n  root_block_device {\n      delete_on_termination = var.disk.delete_on_termination\n      encrypted             = var.disk.encrypted\n      volume_size           = var.disk.volume_size\n      volume_type           = var.disk.volume_type\n  }\n  tags = {\n      Name = var.server_name\n  }\n}\n```",
+      "description": "Click **Insert Code** to define the `aws_instance` resource, then click **Next**:\n\n```js\nresource \"aws_instance\" \"server\" {\n  ami                    = lookup(var.ami_ids, var.os_type, null)\n  instance_type          = var.instance_size\n  monitoring             = var.ec2_monitoring\n  vpc_security_group_ids = [aws_vpc.example.default_security_group_id]\n  subnet_id              = aws_subnet.example.id               \n  root_block_device {\n      delete_on_termination = var.disk.delete_on_termination\n      encrypted             = var.disk.encrypted\n      volume_size           = var.disk.volume_size\n      volume_type           = var.disk.volume_type\n  }\n  tags = {\n      Name = var.server_name\n  }\n}\n```",
       "line": 72,
       "title": "EC2 Instance"
     },
@@ -78,13 +78,13 @@
     },
     {
       "file": "ec2/terraform.tfvars",
-      "description": "Click **Insert Code** to paste in the following variables and their values:\n\n```js\nserver_name = \"calabvm\"\nsubnet_cidr = \"10.0.1.0/24\"\naz = \"us-west-2a\"\nos_type = \"linux\"\nec2_monitoring = true\ndisk = {\n    delete_on_termination = false\n    encrypted = true\n    volume_size = \"10\"\n    volume_type = \"standard\"\n}\n```",
+      "description": "Click **Insert Code** to paste in the following variables and their values:\n\n```js\nserver_name = \"calabvm\"\nsubnet_cidr = \"10.0.1.0/24\"\naz = \"us-west-2a\"\nos_type = \"linux\"\nec2_monitoring = true\ndisk = {\n    delete_on_termination = false\n    encrypted = true\n    volume_size = \"20\"\n    volume_type = \"standard\"\n}\n```",
       "line": 31,
       "title": "Terrafrom Variables Config"
     },
     {
       "file": "ec2/terraform.tfvars",
-      "description": "These value types will match the variable types defined in the `variables.tf` file.\n\nThe `ami_ids` and `instance_size` variables are missing from this file. These values have both been defined with default values in the `variables.tf` file and don't require a value stored in this file.\n\nIf you wish to override the default values stored in the `variables.tf` file, you can either pass in the variable value via the command line, or define the variable with a different value in this `terraform.tfvars` file.",
+      "description": "By default, Terraform will search the current working directory for a `terraform.tfvars` file. If present, this file and the values defined inside will be used to supply your Terraform variables. These value types will match the variable types defined in the `variables.tf` file.\n\nThe `ami_ids` and `instance_size` variables are missing from this file. These values have both been defined with default values in the `variables.tf` file and don't require a value stored in this file.\n\nIf you wish to override the default values stored in the `variables.tf` file, you can either pass in the variable value via the command line, or define the variable with a different value in this `terraform.tfvars` file.",
       "line": 11,
       "title": "Description"
     },
